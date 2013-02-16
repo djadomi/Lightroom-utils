@@ -1,0 +1,67 @@
+#!/usr/bin/perl -w
+
+use strict;
+use Tie::File;
+use Data::Dumper::Simple;
+
+if (@ARGV < 2) {
+	die "I need both a start and an end frame.\n";
+} elsif ($ARGV[0] !~ /\.xmp$/i or $ARGV[1] !~ /\.xmp$/i) {
+	die "Input files should be XMP.\n";
+}
+my $debug = $ARGV[2] and $ARGV[2] eq 'd' ? 1 : 0;
+my $start = $ARGV[0];
+my $end = $ARGV[1];
+my @lapsefiles;
+my %framedata;
+my $inset = 0;
+opendir my $dh, '.' or die "I couldn't open the current directory: $!\n";
+while (readdir $dh) {
+	if (/\.xmp$/) {
+		$inset = 0 if $_ eq $end;
+		push @lapsefiles, $_ if $inset;
+		$inset = 1 if $_ eq $start;
+	}
+}
+closedir $dh;
+my @params = qw(Temperature Tint Exposure2012 Contrast2012 Highlights2012 Shadows2012 Whites2012 Blacks2012 Clarity2012 Saturation Sharpness Vibrance CropTop CropLeft CropBottom CropRight SplitToningShadowHue SplitToningShadowSaturation SplitToningHighlightHue SplitToningHighlightSaturation SplitToningBalance);
+print "We have " . scalar @lapsefiles . " frames to edit:\n" if $debug;
+print Dumper(\@lapsefiles) if $debug;
+local $/;
+open IN, $start;
+while (<IN>) {
+	for my $param (@params) {
+		my $info = {};
+		($info->{$param}) = $_ =~ m/crs:$param="([\+\-\.\d]+)"/;
+		$framedata{$start}{$param} = $info->{$param};
+	}
+}
+close IN;
+open IN, $end;
+while (<IN>) {
+	for my $param (@params) {
+		my $info = {};
+		($info->{$param}) = $_ =~ m/crs:$param="([\+\-\.\d]+)"/;
+		$framedata{$end}{$param} = $info->{$param};
+	}
+}
+close IN;
+my %step;
+for my $param (@params) {
+	$step{$param} = ($framedata{$end}{$param} - $framedata{$start}{$param}) / (scalar @lapsefiles + 1);
+}
+print Dumper(\%step) if $debug;
+my $i = 1;
+for my $xmp (@lapsefiles) {
+	tie my @xmp, 'Tie::File', $xmp, recsep => "\n";
+	for my $param (@params) {
+		my $currentvalue = $framedata{$start}{$param};
+		$currentvalue += ($step{$param} * $i);
+		$framedata{$xmp}{$param} = $currentvalue;
+		for (@xmp) {
+			s/crs:$param="(.*)?"/crs:$param="$currentvalue"/;
+		}
+	}
+	$i++;
+}
+print Dumper(\%framedata) if $debug;
