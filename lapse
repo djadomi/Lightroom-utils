@@ -9,6 +9,7 @@ if (@ARGV < 2) {
 } elsif ($ARGV[0] !~ /\.xmp$/i or $ARGV[1] !~ /\.xmp$/i) {
 	die "Input files should be XMP.\n";
 }
+# should add opts to allow for future keyframing/easing
 my $debug = $ARGV[2] and $ARGV[2] eq 'd' ? 1 : 0;
 my $start = $ARGV[0];
 my $end = $ARGV[1];
