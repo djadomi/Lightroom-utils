@@ -3,16 +3,17 @@
 use strict;
 use Tie::File;
 use Data::Dumper::Simple;
-
-if (@ARGV < 2) {
+use Getopt::Std;
+my %opts;
+getopts('ds:e:', \%opts);
+my $debug = $opts{'d'} ? 1 : 0;
+my $start = $opts{'s'} ? $opts{'s'} : 0;
+my $end = $opts{'e'} ? $opts{'e'} : 0;
+unless ($start and $end) {
 	die "I need both a start and an end frame.\n";
-} elsif ($ARGV[0] !~ /\.xmp$/i or $ARGV[1] !~ /\.xmp$/i) {
+} elsif ($start !~ /\.xmp$/i or $end !~ /\.xmp$/i) {
 	die "Input files should be XMP.\n";
 }
-# should add opts to allow for future keyframing/easing
-my $debug = $ARGV[2] and $ARGV[2] eq 'd' ? 1 : 0;
-my $start = $ARGV[0];
-my $end = $ARGV[1];
 my @lapsefiles;
 my %framedata;
 my $inset = 0;
