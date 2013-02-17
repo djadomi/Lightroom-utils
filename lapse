@@ -33,25 +33,21 @@ closedir $dh;
 my @params = qw(Temperature Tint Exposure2012 Contrast2012 Highlights2012 Shadows2012 Whites2012 Blacks2012 Clarity2012 Saturation Sharpness Vibrance CropTop CropLeft CropBottom CropRight SplitToningShadowHue SplitToningShadowSaturation SplitToningHighlightHue SplitToningHighlightSaturation SplitToningBalance);
 print "We have " . scalar @lapsefiles . " frames to edit:\n" if $debug;
 print Dumper(\@lapsefiles) if $debug;
-local $/;
-open IN, $start;
-while (<IN>) {
-	for my $param (@params) {
-		my $info = {};
-		($info->{$param}) = $_ =~ m/crs:$param="([\+\-\.\d]+)"/;
-		$framedata{$start}{$param} = $info->{$param};
+sub readKeyframe {
+	print "Reading keyframe $_[0]\n" if $debug;
+	local $/;
+	open IN, "$wd/$_[0]";
+	while (<IN>) {
+		for my $param (@params) {
+			my $info = {};
+			($info->{$param}) = $_ =~ m/crs:$param="([\+\-\.\d]+)"/;
+			$framedata{$_[0]}{$param} = $info->{$param};
+		}
 	}
+	close IN;
 }
-close IN;
-open IN, $end;
-while (<IN>) {
-	for my $param (@params) {
-		my $info = {};
-		($info->{$param}) = $_ =~ m/crs:$param="([\+\-\.\d]+)"/;
-		$framedata{$end}{$param} = $info->{$param};
-	}
-}
-close IN;
+&readKeyframe($start);
+&readKeyframe($end);
 my %step;
 for my $param (@params) {
 	$step{$param} = ($framedata{$end}{$param} - $framedata{$start}{$param}) / (scalar @lapsefiles + 1);
