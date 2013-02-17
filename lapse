@@ -31,7 +31,7 @@ while (readdir $dh) {
 }
 closedir $dh;
 my @params = qw(Temperature Tint Exposure2012 Contrast2012 Highlights2012 Shadows2012 Whites2012 Blacks2012 Clarity2012 Saturation Sharpness Vibrance CropTop CropLeft CropBottom CropRight SplitToningShadowHue SplitToningShadowSaturation SplitToningHighlightHue SplitToningHighlightSaturation SplitToningBalance);
-print "We have " . scalar @lapsefiles . " frames to edit:\n" if $debug;
+print "We have " . scalar @lapsefiles . " frames to alter:\n" if $debug;
 print Dumper(\@lapsefiles) if $debug;
 sub readKeyframe {
 	print "Reading keyframe $_[0]\n" if $debug;
