@@ -23,7 +23,7 @@ $end =~ s/$wd\/(.+)/$1/;
 print "Working directory is $wd\n" if $debug;
 opendir my $dh, "$wd" or die "I couldn't open the current directory: $!\n";
 while (readdir $dh) {
-	if (/\.xmp$/) {
+	if (/\.xmp$/i) {
 		$inset = 0 if $_ eq $end;
 		push @lapsefiles, $_ if $inset;
 		$inset = 1 if $_ eq $start;
