@@ -17,10 +17,13 @@ unless ($start and $end) {
 my @lapsefiles;
 my %framedata;
 my $inset = 0;
-(my $wd = $start) =~ s/^(.+)?\/[^\/]+/$1/;
-$start =~ s/$wd\/(.+)/$1/;
-$end =~ s/$wd\/(.+)/$1/;
-print "Working directory is $wd\n" if $debug;
+my $wd = '.';
+if ($start =~ /\//) {
+	($wd = $start) =~ s/^(.+)?\/[^\/]+/$1/;
+	$start =~ s/$wd\/(.+)/$1/;
+	$end =~ s/$wd\/(.+)/$1/;
+	print "Working directory is $wd\n" if $debug;
+}
 opendir my $dh, "$wd" or die "I couldn't open the current directory: $!\n";
 while (readdir $dh) {
 	if (/\.xmp$/i) {
